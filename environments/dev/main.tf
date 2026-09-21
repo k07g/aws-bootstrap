@@ -1,12 +1,8 @@
-module "network" {
-  source = "../../modules/network"
+data "terraform_remote_state" "bootstrap" {
+  backend = "local"
 
-  name_prefix        = "dev"
-  vpc_cidr           = var.vpc_cidr
-  public_subnet_cidr = var.public_subnet_cidr
-
-  tags = {
-    Environment = "dev"
+  config = {
+    path = "${path.module}/../../bootstrap/dev/terraform.tfstate"
   }
 }
 
@@ -14,8 +10,8 @@ module "bastion" {
   source = "../../modules/bastion"
 
   name_prefix                 = "dev-bastion"
-  vpc_id                      = module.network.vpc_id
-  subnet_id                   = module.network.public_subnet_id
+  vpc_id                      = data.terraform_remote_state.bootstrap.outputs.vpc_id
+  subnet_id                   = data.terraform_remote_state.bootstrap.outputs.public_subnet_id
   instance_type               = var.instance_type
   associate_public_ip_address = true
   allowed_egress_cidr_blocks  = var.allowed_egress_cidr_blocks

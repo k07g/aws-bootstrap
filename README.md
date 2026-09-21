@@ -19,11 +19,13 @@ dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`
 ディレクトリを分けています。認証はAWS CLIのプロファイル(`~/.aws/config`)で環境ごとに切り替える
 想定で、各configの`aws_profile`変数(未指定時はデフォルトの認証情報チェーンを使用)で指定します。
 
-## 0. tfstate用S3バケットの作成(初回のみ)
+## 0. アカウント基盤(tfstate用S3バケット・VPC)の作成(初回のみ)
 
-`environments/*` はS3をbackendとして使用するため、先にバケットを作成しておく必要があります。
-このバケット自体はS3 backendに保存できない(鶏卵問題)ため、`bootstrap/<env>` はローカルstateで
-管理します。
+`bootstrap/<env>` は、そのAWSアカウントの土台となる以下2つを作成します。
+
+- `environments/*` がbackendとして使うtfstate保存用S3バケット(このバケット自体はS3
+  backendに保存できない鶏卵問題があるため、`bootstrap/<env>`自体はローカルstateで管理)
+- `environments/<env>` から共有して使うVPC・パブリックサブネット
 
 ```sh
 cd bootstrap/dev
@@ -37,17 +39,19 @@ prodアカウントの場合も同様に `bootstrap/prod` で実行します。
 場合は各`bootstrap/<env>`の`state_bucket_name`変数を指定し、対応する
 `environments/<env>/backend.tf`の`bucket`も合わせて変更してください。
 
+`environments/<env>` は `terraform_remote_state`(local backend)で `bootstrap/<env>/terraform.tfstate`
+を直接参照してVPC/サブネットIDを取得するため、`environments/<env>` を実行する前に
+`bootstrap/<env>` を同じマシン上でapply済みにしておく必要があります。
+
 ## dev環境の踏み台サーバ構築
 
-VPC・パブリックサブネット(IGW経由でインターネットに到達可能)を新規作成し、その中に
+`bootstrap/dev` で作成したVPC・パブリックサブネット(IGW経由でインターネットに到達可能)の中に
 踏み台サーバを構築します。踏み台サーバはSSM Session Manager経由でのみ接続する構成です
 (SSHポート・インバウンドルールは一切開放しません)。
 
 ### 事前準備
 
-- 上記の手順でtfstate用S3バケットを作成済みであること
-- 必要に応じて `environments/dev/terraform.tfvars.example` を `terraform.tfvars` にコピーし、
-  `vpc_cidr` / `public_subnet_cidr` を変更する(未指定時はデフォルト値を使用)
+- 上記の手順で `bootstrap/dev` をapply済みであること
 
 ### 実行
 

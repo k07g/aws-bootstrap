@@ -1,11 +1,11 @@
 output "vpc_id" {
-  description = "作成したVPCのID"
-  value       = module.network.vpc_id
+  description = "使用しているVPCのID(bootstrap/devで作成)"
+  value       = data.terraform_remote_state.bootstrap.outputs.vpc_id
 }
 
 output "public_subnet_id" {
-  description = "作成したパブリックサブネットのID"
-  value       = module.network.public_subnet_id
+  description = "使用しているパブリックサブネットのID(bootstrap/devで作成)"
+  value       = data.terraform_remote_state.bootstrap.outputs.public_subnet_id
 }
 
 output "bastion_instance_id" {
