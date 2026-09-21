@@ -4,7 +4,9 @@ AWS環境の初期構築
 ## 構成
 
 ```
-bootstrap/       # tfstate保存用S3バケット作成用config(ローカルstate)
+bootstrap/
+  dev/            # dev用tfstate保存バケット作成用config(ローカルstate、dev AWSアカウント向け)
+  prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け)
 environments/
   dev/            # dev環境用のroot module
 modules/
@@ -13,19 +15,27 @@ modules/
   bastion/        # 踏み台サーバ(EC2)モジュール
 ```
 
+dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`environments`ともに環境ごとに
+ディレクトリを分けています。認証はAWS CLIのプロファイル(`~/.aws/config`)で環境ごとに切り替える
+想定で、各configの`aws_profile`変数(未指定時はデフォルトの認証情報チェーンを使用)で指定します。
+
 ## 0. tfstate用S3バケットの作成(初回のみ)
 
 `environments/*` はS3をbackendとして使用するため、先にバケットを作成しておく必要があります。
-このバケット自体はS3 backendに保存できない(鶏卵問題)ため、`bootstrap/` はローカルstateで管理します。
+このバケット自体はS3 backendに保存できない(鶏卵問題)ため、`bootstrap/<env>` はローカルstateで
+管理します。
 
 ```sh
-cd bootstrap
+cd bootstrap/dev
 terraform init
-terraform apply
+terraform apply -var="aws_profile=dev"   # devアカウント用プロファイルを指定
 ```
 
-デフォルトのバケット名は `k07g.terraform.dev` です。変更する場合は `state_bucket_name` 変数を
-指定し、`environments/dev/backend.tf` の `bucket` も合わせて変更してください。
+prodアカウントの場合も同様に `bootstrap/prod` で実行します。
+
+デフォルトのバケット名はdev: `k07g.terraform.dev` / prod: `k07g.terraform.prod` です。変更する
+場合は各`bootstrap/<env>`の`state_bucket_name`変数を指定し、対応する
+`environments/<env>/backend.tf`の`bucket`も合わせて変更してください。
 
 ## dev環境の踏み台サーバ構築
 

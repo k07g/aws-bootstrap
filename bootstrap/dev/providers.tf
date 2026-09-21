@@ -12,12 +12,14 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
+  profile = var.aws_profile
 
   default_tags {
     tags = {
-      Project   = "aws-bootstrap"
-      ManagedBy = "terraform"
+      Project     = "aws-bootstrap"
+      Environment = "dev"
+      ManagedBy   = "terraform"
     }
   }
 }
