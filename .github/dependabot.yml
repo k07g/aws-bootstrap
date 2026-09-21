@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "terraform"
+    directories:
+      - "/bootstrap/dev"
+      - "/bootstrap/prod"
+      - "/environments/dev"
+      - "/modules/bastion"
+      - "/modules/network"
+      - "/modules/state-backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
