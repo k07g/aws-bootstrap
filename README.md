@@ -37,6 +37,19 @@ prodアカウントの場合も同様に `bootstrap/prod` で実行します。
 場合は各`bootstrap/<env>`の`state_bucket_name`変数を指定し、対応する
 `environments/<env>/backend.tf`の`bucket`も合わせて変更してください。
 
+`bootstrap/dev`は、GitHub ActionsがOIDC経由でAWSにアクセスするためのIAMロール
+(`modules/github-oidc`)も作成します。apply後、出力される`github_actions_role_arn`を
+このリポジトリのGitHub Actions変数 `AWS_DEV_DEPLOY_ROLE_ARN`(Settings → Secrets and
+variables → Actions → Variables)に設定してください。これによりCD(下記)が有効になります。
+
+## CD(自動デプロイ)
+
+mainブランチへのmerge後、CI(fmt/validate/test)が成功すると`environments/dev`が
+`terraform apply`で自動デプロイされます(`.github/workflows/terraform-ci.yml`の
+`deploy-dev` job)。認証はOIDCで発行される一時クレデンシャルを使用し、GitHub Secretsに
+長期的なアクセスキーは保存しません。`bootstrap/*`および`environments/prod`はCD対象外で、
+手動apply運用のままです。
+
 ## dev環境の踏み台サーバ構築
 
 VPC・パブリックサブネット(IGW経由でインターネットに到達可能)を新規作成し、その中に
