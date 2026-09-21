@@ -1,7 +1,7 @@
 name: PR automation
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 permissions:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   assign-author:
-    if: github.event.action == 'opened'
+    if: github.event.action == 'opened' && !endsWith(github.event.pull_request.user.login, '[bot]')
     runs-on: ubuntu-latest
     steps:
       - name: Assign PR author
