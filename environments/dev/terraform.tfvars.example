@@ -1,0 +1,6 @@
+aws_region = "ap-northeast-1"
+vpc_id     = "vpc-xxxxxxxxxxxxxxxxx"
+subnet_id  = "subnet-xxxxxxxxxxxxxxxxx"
+
+# パブリックサブネットに配置してSSMエンドポイント経由のNATを介さず通信する場合はtrueにする
+# associate_public_ip_address = true
