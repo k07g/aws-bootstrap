@@ -49,3 +49,27 @@ jobs:
       - name: terraform validate
         working-directory: ${{ matrix.directory }}
         run: terraform validate
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - modules/bastion
+          - modules/network
+          - modules/state-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: terraform init
+        working-directory: ${{ matrix.directory }}
+        run: terraform init -input=false
+
+      - name: terraform test
+        working-directory: ${{ matrix.directory }}
+        run: terraform test

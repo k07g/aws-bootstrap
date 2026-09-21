@@ -63,3 +63,15 @@ terraform apply
 ```sh
 aws ssm start-session --target $(terraform output -raw bastion_instance_id) --region ap-northeast-1
 ```
+
+## モジュールのテスト
+
+`modules/*` には[terraform test](https://developer.hashicorp.com/terraform/language/tests)による
+テスト(`tests/*.tftest.hcl`)を用意しています。`mock_provider`でAWS providerをモック化しているため、
+AWS認証情報なし・実リソース作成なしで実行できます。PR作成時にもCIで自動実行されます。
+
+```sh
+cd modules/network   # または modules/bastion, modules/state-backend
+terraform init
+terraform test
+```
