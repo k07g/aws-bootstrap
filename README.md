@@ -8,7 +8,7 @@ bootstrap/
   dev/            # dev用tfstate保存バケット作成用config(ローカルstate、dev AWSアカウント向け)
   prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け)
 environments/
-  dev/            # dev環境用のroot module
+  dev/            # dev環境用のroot module(VPC・踏み台サーバを作成)
 modules/
   state-backend/  # tfstate保存用S3バケットモジュール
   network/        # VPC・パブリックサブネットモジュール
