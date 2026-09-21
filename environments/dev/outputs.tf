@@ -1,3 +1,13 @@
+output "vpc_id" {
+  description = "作成したVPCのID"
+  value       = module.network.vpc_id
+}
+
+output "public_subnet_id" {
+  description = "作成したパブリックサブネットのID"
+  value       = module.network.public_subnet_id
+}
+
 output "bastion_instance_id" {
   description = "踏み台サーバのインスタンスID"
   value       = module.bastion.instance_id

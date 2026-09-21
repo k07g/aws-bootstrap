@@ -1,11 +1,23 @@
+module "network" {
+  source = "../../modules/network"
+
+  name_prefix        = "dev"
+  vpc_cidr           = var.vpc_cidr
+  public_subnet_cidr = var.public_subnet_cidr
+
+  tags = {
+    Environment = "dev"
+  }
+}
+
 module "bastion" {
   source = "../../modules/bastion"
 
   name_prefix                 = "dev-bastion"
-  vpc_id                      = var.vpc_id
-  subnet_id                   = var.subnet_id
+  vpc_id                      = module.network.vpc_id
+  subnet_id                   = module.network.public_subnet_id
   instance_type               = var.instance_type
-  associate_public_ip_address = var.associate_public_ip_address
+  associate_public_ip_address = true
   allowed_egress_cidr_blocks  = var.allowed_egress_cidr_blocks
 
   tags = {
