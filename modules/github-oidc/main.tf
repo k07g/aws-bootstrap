@@ -28,8 +28,10 @@ data "aws_iam_policy_document" "assume_role" {
       values   = ["sts.amazonaws.com"]
     }
 
+    # GitHubのsubクレームは repo:<owner>@<owner_id>/<repo>@<repo_id>:... という
+    # 数値ID付き形式になるため、StringLikeでワイルドカードマッチさせる
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values   = var.allowed_subjects
     }

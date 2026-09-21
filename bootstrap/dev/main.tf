@@ -68,8 +68,9 @@ module "github_actions_dev_deploy" {
 
   role_name = "github-actions-dev-deploy"
   # deploy-dev jobはGitHub Environment "dev"を指定しているため、OIDCトークンのsubクレームは
-  # ref:refs/heads/main ではなく environment:dev 形式になる
-  allowed_subjects = ["repo:k07g/aws-bootstrap:environment:dev"]
+  # ref:refs/heads/main ではなく repo:<owner>@<owner_id>/<repo>@<repo_id>:environment:dev 形式になる。
+  # owner/repoの数値IDは安定だがリポジトリ名で読みやすくするためワイルドカードでマッチさせる。
+  allowed_subjects = ["repo:k07g@*/aws-bootstrap@*:environment:dev"]
   policy_json      = data.aws_iam_policy_document.github_actions_dev_deploy.json
 
   tags = {
