@@ -4,7 +4,7 @@ variable "role_name" {
 }
 
 variable "allowed_subjects" {
-  description = "assumeを許可するOIDCトークンのsubクレーム(例: repo:owner/repo:ref:refs/heads/main)"
+  description = "assumeを許可するOIDCトークンのsubクレーム(StringLikeでワイルドカードマッチ。例: repo:owner@*/repo@*:environment:dev)"
   type        = list(string)
 }
 
