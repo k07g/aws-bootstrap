@@ -15,15 +15,3 @@ variable "state_bucket_name" {
   type        = string
   default     = "k07g.terraform.dev"
 }
-
-variable "vpc_cidr" {
-  description = "dev環境用VPCのCIDRブロック"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "public_subnet_cidr" {
-  description = "dev環境用パブリックサブネットのCIDRブロック"
-  type        = string
-  default     = "10.0.1.0/24"
-}
