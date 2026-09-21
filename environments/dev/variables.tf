@@ -10,10 +10,16 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "public_subnet_cidr" {
-  description = "新規作成するパブリックサブネットのCIDRブロック"
-  type        = string
-  default     = "10.0.1.0/24"
+variable "public_subnets" {
+  description = "作成するパブリックサブネットのマップ(キーは任意の識別子)"
+  type = map(object({
+    cidr_block        = string
+    availability_zone = string
+  }))
+  default = {
+    a = { cidr_block = "10.0.1.0/24", availability_zone = "ap-northeast-1a" }
+    c = { cidr_block = "10.0.2.0/24", availability_zone = "ap-northeast-1c" }
+  }
 }
 
 variable "instance_type" {

@@ -1,19 +1,15 @@
 mock_provider "aws" {}
 
-override_data {
-  target = data.aws_availability_zones.available
-  values = {
-    names = ["ap-northeast-1a", "ap-northeast-1c"]
-  }
-}
-
-run "creates_vpc_and_subnet_with_expected_cidr" {
+run "creates_vpc_and_subnets_with_expected_cidr_and_az" {
   command = plan
 
   variables {
-    name_prefix        = "test"
-    vpc_cidr           = "10.5.0.0/16"
-    public_subnet_cidr = "10.5.1.0/24"
+    name_prefix = "test"
+    vpc_cidr    = "10.5.0.0/16"
+    public_subnets = {
+      a = { cidr_block = "10.5.1.0/24", availability_zone = "ap-northeast-1a" }
+      c = { cidr_block = "10.5.2.0/24", availability_zone = "ap-northeast-1c" }
+    }
   }
 
   assert {
@@ -22,34 +18,46 @@ run "creates_vpc_and_subnet_with_expected_cidr" {
   }
 
   assert {
-    condition     = aws_subnet.public.cidr_block == "10.5.1.0/24"
-    error_message = "Public subnet CIDR did not match the public_subnet_cidr variable"
+    condition     = aws_subnet.public["a"].cidr_block == "10.5.1.0/24"
+    error_message = "Subnet 'a' CIDR did not match the public_subnets variable"
   }
 
   assert {
-    condition     = aws_subnet.public.map_public_ip_on_launch == true
-    error_message = "Public subnet should auto-assign public IPs"
+    condition     = aws_subnet.public["a"].availability_zone == "ap-northeast-1a"
+    error_message = "Subnet 'a' availability_zone did not match the public_subnets variable"
   }
 
   assert {
-    condition     = aws_subnet.public.availability_zone == "ap-northeast-1a"
-    error_message = "Public subnet should default to the first available AZ"
+    condition     = aws_subnet.public["c"].cidr_block == "10.5.2.0/24"
+    error_message = "Subnet 'c' CIDR did not match the public_subnets variable"
+  }
+
+  assert {
+    condition     = aws_subnet.public["c"].availability_zone == "ap-northeast-1c"
+    error_message = "Subnet 'c' availability_zone did not match the public_subnets variable"
+  }
+
+  assert {
+    condition     = alltrue([for s in aws_subnet.public : s.map_public_ip_on_launch])
+    error_message = "All public subnets should auto-assign public IPs"
   }
 }
 
-run "uses_explicit_availability_zone_when_set" {
+run "creates_a_route_table_association_per_subnet" {
   command = plan
 
   variables {
-    name_prefix        = "test"
-    vpc_cidr           = "10.5.0.0/16"
-    public_subnet_cidr = "10.5.1.0/24"
-    availability_zone  = "ap-northeast-1c"
+    name_prefix = "test"
+    vpc_cidr    = "10.5.0.0/16"
+    public_subnets = {
+      a = { cidr_block = "10.5.1.0/24", availability_zone = "ap-northeast-1a" }
+      c = { cidr_block = "10.5.2.0/24", availability_zone = "ap-northeast-1c" }
+    }
   }
 
   assert {
-    condition     = aws_subnet.public.availability_zone == "ap-northeast-1c"
-    error_message = "Public subnet should use the explicitly provided availability_zone"
+    condition     = length(aws_route_table_association.public) == 2
+    error_message = "Should create one route table association per public subnet"
   }
 }
 
@@ -57,9 +65,11 @@ run "applies_name_prefix_to_tags" {
   command = plan
 
   variables {
-    name_prefix        = "myenv"
-    vpc_cidr           = "10.0.0.0/16"
-    public_subnet_cidr = "10.0.1.0/24"
+    name_prefix = "myenv"
+    vpc_cidr    = "10.0.0.0/16"
+    public_subnets = {
+      a = { cidr_block = "10.0.1.0/24", availability_zone = "ap-northeast-1a" }
+    }
   }
 
   assert {
@@ -68,7 +78,7 @@ run "applies_name_prefix_to_tags" {
   }
 
   assert {
-    condition     = aws_subnet.public.tags["Name"] == "myenv-public"
-    error_message = "Subnet Name tag should be '<name_prefix>-public'"
+    condition     = aws_subnet.public["a"].tags["Name"] == "myenv-public-a"
+    error_message = "Subnet Name tag should be '<name_prefix>-public-<key>'"
   }
 }

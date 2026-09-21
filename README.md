@@ -60,7 +60,8 @@ VPC・パブリックサブネット(IGW経由でインターネットに到達�
 
 - 上記の手順でtfstate用S3バケットを作成済みであること
 - 必要に応じて `environments/dev/terraform.tfvars.example` を `terraform.tfvars` にコピーし、
-  `vpc_cidr` / `public_subnet_cidr` を変更する(未指定時はデフォルト値を使用)
+  `vpc_cidr` / `public_subnets` を変更する(未指定時はデフォルトで`ap-northeast-1a`/`1c`に
+  それぞれパブリックサブネットを1つずつ作成する)
 
 ### 実行
 

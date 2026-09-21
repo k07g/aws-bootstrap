@@ -3,9 +3,9 @@ output "vpc_id" {
   value       = module.network.vpc_id
 }
 
-output "public_subnet_id" {
-  description = "作成したパブリックサブネットのID"
-  value       = module.network.public_subnet_id
+output "public_subnet_ids" {
+  description = "作成したパブリックサブネットのID一覧(キーはpublic_subnetsのキーに対応)"
+  value       = module.network.public_subnet_ids
 }
 
 output "bastion_instance_id" {
