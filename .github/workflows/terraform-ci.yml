@@ -38,10 +38,12 @@ jobs:
           - bootstrap/prod
           - bootstrap/management
           - environments/dev
+          - environments/prod
           - modules/bastion
           - modules/network
           - modules/state-backend
           - modules/github-oidc
+          - modules/route53-zone
     steps:
       - uses: actions/checkout@v7
 
@@ -67,6 +69,7 @@ jobs:
           - modules/network
           - modules/state-backend
           - modules/github-oidc
+          - modules/route53-zone
     steps:
       - uses: actions/checkout@v7
 
@@ -109,4 +112,33 @@ jobs:
 
       - name: terraform apply
         working-directory: environments/dev
+        run: terraform apply -auto-approve -input=false
+
+  deploy-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [fmt, validate, test]
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_PROD_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-1
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+
+      - name: terraform init
+        working-directory: environments/prod
+        run: terraform init -input=false
+
+      - name: terraform apply
+        working-directory: environments/prod
         run: terraform apply -auto-approve -input=false
