@@ -6,15 +6,17 @@ AWS環境の初期構築
 ```
 bootstrap/
   management/     # AWS Organizations管理アカウント向けconfig(OU・アカウント作成、ローカルstate)
-  dev/            # dev用tfstate保存バケット作成用config(ローカルstate、dev AWSアカウント向け)
-  prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け)
+  dev/            # dev用tfstate保存バケット・OIDCロール作成用config(ローカルstate)
+  prod/           # prod用tfstate保存バケット・OIDCロール作成用config(ローカルstate)
 environments/
   dev/            # dev環境用のroot module(VPC・踏み台サーバを作成)
+  prod/           # prod環境用のroot module(Route53ホストゾーンを作成)
 modules/
   state-backend/  # tfstate保存用S3バケットモジュール
   network/        # VPC・パブリックサブネットモジュール
   bastion/        # 踏み台サーバ(EC2)モジュール
   github-oidc/    # GitHub Actions用OIDC provider + IAMロールモジュール
+  route53-zone/   # Route53パブリックホストゾーンモジュール
 ```
 
 dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`environments`ともに環境ごとに
@@ -56,7 +58,9 @@ rootアクセスキーを発行・保存しないでください)。
 Control Tower管理下と見られる`Security` OU(`Audit`/`Log Archive`アカウント)は、Control Tower
 との競合を避けるため意図的にコード化・import対象外としています。
 
-新規作成したアカウントへの`bootstrap/prod`等でのリソース作成は別途対応します(未着手)。
+新規作成したアカウントへの実際のリソース作成(tfstate用S3バケット、GitHub Actions用OIDCロール)は
+`bootstrap/prod`で、Route53等のアプリケーション寄りのリソースは`environments/prod`で行います
+(下記参照)。
 
 ## 0. tfstate用S3バケットの作成(初回のみ)
 
@@ -76,18 +80,30 @@ prodアカウントの場合も同様に `bootstrap/prod` で実行します。
 場合は各`bootstrap/<env>`の`state_bucket_name`変数を指定し、対応する
 `environments/<env>/backend.tf`の`bucket`も合わせて変更してください。
 
-`bootstrap/dev`は、GitHub ActionsがOIDC経由でAWSにアクセスするためのIAMロール
-(`modules/github-oidc`)も作成します。apply後、出力される`github_actions_role_arn`を
-このリポジトリのGitHub Actions変数 `AWS_DEV_DEPLOY_ROLE_ARN`(Settings → Secrets and
-variables → Actions → Variables)に設定してください。これによりCD(下記)が有効になります。
+`bootstrap/dev`・`bootstrap/prod`はそれぞれ、GitHub ActionsがOIDC経由でAWSにアクセスするための
+IAMロール(`modules/github-oidc`)も作成します。apply後、出力される`github_actions_role_arn`を
+このリポジトリのGitHub Actions環境変数(dev環境の変数`AWS_DEV_DEPLOY_ROLE_ARN` / prod環境の変数
+`AWS_PROD_DEPLOY_ROLE_ARN`。Settings → Environments → 各environment → Environment variables)に
+設定してください。これによりCD(下記)が有効になります。
+
+`bootstrap/prod`はProdアカウント(`prod_account_id`)の`OrganizationAccountAccessRole`を
+assumeして操作するため、`aws_profile`には管理アカウント側の(rootではない)IAM Identity Center
+プロファイルを指定してください。
+
+```sh
+cd bootstrap/prod
+terraform init
+terraform apply -var="aws_profile=<管理アカウント用プロファイル>"
+```
 
 ## CD(自動デプロイ)
 
-mainブランチへのmerge後、CI(fmt/validate/test)が成功すると`environments/dev`が
-`terraform apply`で自動デプロイされます(`.github/workflows/terraform-ci.yml`の
-`deploy-dev` job)。認証はOIDCで発行される一時クレデンシャルを使用し、GitHub Secretsに
-長期的なアクセスキーは保存しません。`bootstrap/*`および`environments/prod`はCD対象外で、
-手動apply運用のままです。
+mainブランチへのmerge後、CI(fmt/validate/test)が成功すると`environments/dev`・
+`environments/prod`がそれぞれ`terraform apply`で自動デプロイされます
+(`.github/workflows/terraform-ci.yml`の`deploy-dev`・`deploy-prod` job)。認証はOIDCで
+発行される一時クレデンシャルを使用し、GitHub Secretsに長期的なアクセスキーは保存しません。
+`bootstrap/*`(アカウント基盤・tfstateバケット・OIDCロール自体の作成)はCD対象外で、手動apply
+運用のままです。
 
 ## dev環境の踏み台サーバ構築
 
@@ -116,6 +132,19 @@ terraform apply
 ```sh
 aws ssm start-session --target $(terraform output -raw bastion_instance_id) --region ap-northeast-1
 ```
+
+## prod環境のRoute53ホストゾーン構築
+
+`environments/prod` は、`ea-sys.jp`(デフォルト)のRoute53パブリックホストゾーンを作成します。
+mainへのmerge後、CDにより自動で`terraform apply`されます(手動実行も可能)。
+
+```sh
+cd environments/prod
+terraform init
+terraform apply
+```
+
+apply後に出力される`route53_name_servers`を、ドメインレジストラ側のNSレコードに設定してください。
 
 ## モジュールのテスト
 

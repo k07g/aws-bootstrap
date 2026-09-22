@@ -15,3 +15,9 @@ variable "state_bucket_name" {
   type        = string
   default     = "k07g.terraform.prod"
 }
+
+variable "prod_account_id" {
+  description = "prod用AWSアカウントのID。指定した場合、そのアカウントのOrganizationAccountAccessRoleをassumeする(bootstrap/managementで作成したProdアカウント)"
+  type        = string
+  default     = "218733194573"
+}
