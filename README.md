@@ -5,19 +5,48 @@ AWS環境の初期構築
 
 ```
 bootstrap/
+  management/     # AWS Organizations管理アカウント向けconfig(OU・アカウント作成、ローカルstate)
   dev/            # dev用tfstate保存バケット作成用config(ローカルstate、dev AWSアカウント向け)
-  prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け)
+  prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け。
+                  # state bucketに加えてRoute53ホストゾーンも作成)
 environments/
   dev/            # dev環境用のroot module(VPC・踏み台サーバを作成)
 modules/
   state-backend/  # tfstate保存用S3バケットモジュール
   network/        # VPC・パブリックサブネットモジュール
   bastion/        # 踏み台サーバ(EC2)モジュール
+  github-oidc/    # GitHub Actions用OIDC provider + IAMロールモジュール
+  route53-zone/   # Route53パブリックホストゾーンモジュール
 ```
 
 dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`environments`ともに環境ごとに
 ディレクトリを分けています。認証はAWS CLIのプロファイル(`~/.aws/config`)で環境ごとに切り替える
 想定で、各configの`aws_profile`変数(未指定時はデフォルトの認証情報チェーンを使用)で指定します。
+
+## -1. AWS Organizations管理アカウント: OU・アカウント作成(必要な場合のみ)
+
+`bootstrap/management` は、AWS Organizationsの管理(root)アカウントに対して以下を作成します。
+
+- `Workloads` OU(Root直下)
+- その配下に新規AWSアカウント(デフォルト名`Prod`)
+
+```sh
+cd bootstrap/management
+terraform init
+terraform apply -var="aws_profile=<管理アカウント用プロファイル>" -var="prod_account_email=<一意なrootメール>"
+```
+
+認証には長期のrootアクセスキーではなく、`aws login`(AWS CLI v2.36+)によるコンソール
+セッションベースの一時クレデンシャルを使うことを推奨します。
+
+apply後に出力される`prod_account_id`を、`bootstrap/prod`の`prod_account_id`変数に渡すことで、
+新規アカウントに対して(専用のSSOアクセス設定を待たずに)`OrganizationAccountAccessRole`
+経由でアクセスできます。
+
+```sh
+cd bootstrap/prod
+terraform apply -var="aws_profile=<管理アカウント用プロファイル>" -var="prod_account_id=<出力されたID>"
+```
 
 ## 0. tfstate用S3バケットの作成(初回のみ)
 
@@ -41,6 +70,10 @@ prodアカウントの場合も同様に `bootstrap/prod` で実行します。
 (`modules/github-oidc`)も作成します。apply後、出力される`github_actions_role_arn`を
 このリポジトリのGitHub Actions変数 `AWS_DEV_DEPLOY_ROLE_ARN`(Settings → Secrets and
 variables → Actions → Variables)に設定してください。これによりCD(下記)が有効になります。
+
+`bootstrap/prod`は、tfstate用S3バケットに加えて`route53_domain_name`変数(デフォルト
+`ea-sys.jp`)で指定したドメインのRoute53パブリックホストゾーンも作成します。apply後に
+出力される`route53_name_servers`を、ドメインレジストラ側のNSレコードに設定してください。
 
 ## CD(自動デプロイ)
 

@@ -15,3 +15,15 @@ variable "state_bucket_name" {
   type        = string
   default     = "k07g.terraform.prod"
 }
+
+variable "prod_account_id" {
+  description = "prod用AWSアカウントのID(指定した場合、そのアカウントのOrganizationAccountAccessRoleをassumeする。bootstrap/managementのoutputで取得)"
+  type        = string
+  default     = null
+}
+
+variable "route53_domain_name" {
+  description = "作成するRoute53パブリックホストゾーンのドメイン名"
+  type        = string
+  default     = "ea-sys.jp"
+}
