@@ -26,7 +26,7 @@ dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`
 `bootstrap/management` は、AWS Organizationsの管理(root)アカウントに対して以下を作成します。
 
 - `Workloads` OU(Root直下)
-- その配下に新規AWSアカウント(デフォルト名`Prod`)
+- その配下に新規AWSアカウント(デフォルト名`Prod`・`Dev`)
 - IAM Identity Centerの`aws-admin`ユーザーに対する、`Prod`アカウントへの`AWSAdministratorAccess`
   割り当て(既存の他アカウントと同じ権限パターンに合わせたもの)
 
@@ -38,7 +38,9 @@ dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`
 ```sh
 cd bootstrap/management
 terraform init
-terraform apply -var="aws_profile=<管理アカウント用プロファイル>" -var="prod_account_email=<一意なrootメール>"
+terraform apply -var="aws_profile=<管理アカウント用プロファイル>" \
+  -var="prod_account_email=<一意なrootメール>" \
+  -var="dev_account_email=<一意なrootメール>"
 ```
 
 認証には長期のrootアクセスキーではなく、`aws login`(AWS CLI v2.36+)によるコンソール

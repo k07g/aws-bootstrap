@@ -21,6 +21,17 @@ resource "aws_organizations_account" "prod" {
   }
 }
 
+resource "aws_organizations_account" "dev" {
+  name      = var.dev_account_name
+  email     = var.dev_account_email
+  parent_id = aws_organizations_organizational_unit.workloads.id
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [role_name, iam_user_access_to_billing]
+  }
+}
+
 # --- 以下は既存のOrganizations構成をコード化してimportしたもの ---
 # Control Tower管理下と見られる"Security" OU(Audit / Log Archiveアカウント)は
 # 意図的に対象外としている(Control Towerとの競合を避けるため)。
