@@ -133,6 +133,12 @@ terraform apply
 aws ssm start-session --target $(terraform output -raw bastion_instance_id) --region ap-northeast-1
 ```
 
+### サブドメイン(dev.ea-sys.jp)
+
+`environments/dev` は `dev.ea-sys.jp`(デフォルト)のRoute53パブリックホストゾーンも作成します。
+apply後に出力される`route53_name_servers`を、`environments/prod`側で親ゾーン(`ea-sys.jp`)への
+NS委任レコードとして設定する必要があります(下記参照)。
+
 ## prod環境のRoute53ホストゾーン構築
 
 `environments/prod` は、`ea-sys.jp`(デフォルト)のRoute53パブリックホストゾーンと、

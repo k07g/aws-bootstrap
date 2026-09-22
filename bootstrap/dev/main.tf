@@ -61,6 +61,12 @@ data "aws_iam_policy_document" "github_actions_dev_deploy" {
     actions   = ["s3:ListBucket"]
     resources = [module.state_backend.bucket_arn]
   }
+
+  statement {
+    sid       = "Route53Manage"
+    actions   = ["route53:*"]
+    resources = ["*"]
+  }
 }
 
 module "github_actions_dev_deploy" {
