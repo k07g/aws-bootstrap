@@ -135,8 +135,9 @@ aws ssm start-session --target $(terraform output -raw bastion_instance_id) --re
 
 ## prod環境のRoute53ホストゾーン構築
 
-`environments/prod` は、`ea-sys.jp`(デフォルト)のRoute53パブリックホストゾーンを作成します。
-mainへのmerge後、CDにより自動で`terraform apply`されます(手動実行も可能)。
+`environments/prod` は、`ea-sys.jp`(デフォルト)のRoute53パブリックホストゾーンと、
+Google Workspace用のMX/TXT(SPF・サイト確認)/DMARCレコードを作成します。mainへのmerge後、
+CDにより自動で`terraform apply`されます(手動実行も可能)。
 
 ```sh
 cd environments/prod
