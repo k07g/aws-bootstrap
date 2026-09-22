@@ -76,7 +76,7 @@ terraform apply -var="aws_profile=dev"   # devアカウント用プロファイ�
 
 prodアカウントの場合も同様に `bootstrap/prod` で実行します。
 
-デフォルトのバケット名はdev: `k07g-terraform-dev` / prod: `k07g.terraform.prod` です。変更する
+デフォルトのバケット名はdev: `k07g-terraform-dev` / prod: `k07g-terraform-prod` です。変更する
 場合は各`bootstrap/<env>`の`state_bucket_name`変数を指定し、対応する
 `environments/<env>/backend.tf`の`bucket`も合わせて変更してください。
 

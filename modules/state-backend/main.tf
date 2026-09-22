@@ -4,6 +4,12 @@ resource "aws_s3_bucket" "state" {
   tags = merge(var.tags, {
     Name = var.bucket_name
   })
+
+  # bucket_name変更時、先に新バケットを作成してから旧バケットの削除を試みるようにする
+  # (旧バケットに既存のtfstateが残っている場合、削除は失敗するが新バケットの作成は成功する)
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_s3_bucket_versioning" "state" {
