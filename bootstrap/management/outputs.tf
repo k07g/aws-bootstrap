@@ -12,3 +12,18 @@ output "prod_account_arn" {
   description = "作成したprodアカウントのARN"
   value       = aws_organizations_account.prod.arn
 }
+
+output "sandbox_ou_id" {
+  description = "既存Sandbox OUのID"
+  value       = aws_organizations_organizational_unit.sandbox.id
+}
+
+output "deployments_ou_id" {
+  description = "既存Deployments OUのID"
+  value       = aws_organizations_organizational_unit.deployments.id
+}
+
+output "sdlc_ou_id" {
+  description = "既存SDLC OU(Deployments配下)のID"
+  value       = aws_organizations_organizational_unit.sdlc.id
+}

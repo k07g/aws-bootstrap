@@ -28,6 +28,15 @@ dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`
 - `Workloads` OU(Root直下)
 - その配下に新規AWSアカウント(デフォルト名`Prod`)
 
+また、既存の組織構成のうち以下もコード化してimport済みです(実インフラと一致していることを
+`terraform plan`で確認済み)。
+
+- `Sandbox` OU と配下の`KorenagaMakoto`アカウント
+- `Deployments` OU、その配下の`SDLC` OU と`TerraformDeploymentDevAccount`アカウント
+
+Control Tower管理下と見られる`Security` OU(`Audit`/`Log Archive`アカウント)は、Control Tower
+との競合を避けるため意図的にコード化・import対象外としています。
+
 > **必ずAWSルートユーザーで手動実行すること。** `bootstrap/management`はCI/CD(GitHub Actions)
 > からは一切実行しません。アカウント作成(`aws_organizations_account`)は管理アカウントの
 > 強い権限を要する不可逆性の高い操作のため、常に人間がローカル環境から`terraform plan`の内容を
