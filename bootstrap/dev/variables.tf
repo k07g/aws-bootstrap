@@ -13,5 +13,5 @@ variable "aws_profile" {
 variable "state_bucket_name" {
   description = "Terraform state保存用S3バケット名(グローバルで一意である必要がある)"
   type        = string
-  default     = "k07g.terraform.dev"
+  default     = "k07g-terraform-dev"
 }
