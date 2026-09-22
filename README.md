@@ -30,6 +30,11 @@ dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`
 - `Workloads` OU(Root直下)
 - その配下に新規AWSアカウント(デフォルト名`Prod`)
 
+> **必ずAWSルートユーザーで手動実行すること。** `bootstrap/management`はCI/CD(GitHub Actions)
+> からは一切実行しません。アカウント作成(`aws_organizations_account`)は管理アカウントの
+> 強い権限を要する不可逆性の高い操作のため、常に人間がローカル環境から`terraform plan`の内容を
+> 確認したうえで`terraform apply`してください。OIDC等による自動化の対象には含めないでください。
+
 ```sh
 cd bootstrap/management
 terraform init
@@ -37,7 +42,8 @@ terraform apply -var="aws_profile=<管理アカウント用プロファイル>" 
 ```
 
 認証には長期のrootアクセスキーではなく、`aws login`(AWS CLI v2.36+)によるコンソール
-セッションベースの一時クレデンシャルを使うことを推奨します。
+セッションベースの一時クレデンシャルを使うことを推奨します(`aws configure`等で長期の
+rootアクセスキーを発行・保存しないでください)。
 
 apply後に出力される`prod_account_id`を、`bootstrap/prod`の`prod_account_id`変数に渡すことで、
 新規アカウントに対して(専用のSSOアクセス設定を待たずに)`OrganizationAccountAccessRole`
