@@ -33,3 +33,9 @@ variable "allowed_egress_cidr_blocks" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
+
+variable "route53_subdomain_name" {
+  description = "作成するRoute53パブリックホストゾーンのサブドメイン名"
+  type        = string
+  default     = "dev.ea-sys.jp"
+}

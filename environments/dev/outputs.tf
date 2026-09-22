@@ -22,3 +22,13 @@ output "ssm_connect_command" {
   description = "SSM Session Managerで接続するためのAWS CLIコマンド"
   value       = "aws ssm start-session --target ${module.bastion.instance_id} --region ${var.aws_region}"
 }
+
+output "route53_zone_id" {
+  description = "作成したRoute53ホストゾーンのID"
+  value       = module.route53_zone.zone_id
+}
+
+output "route53_name_servers" {
+  description = "親ゾーン(ea-sys.jp)側にNS委任レコードを作成する際に使用するネームサーバー"
+  value       = module.route53_zone.name_servers
+}

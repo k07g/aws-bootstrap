@@ -10,6 +10,17 @@ module "network" {
   }
 }
 
+module "route53_zone" {
+  source = "../../modules/route53-zone"
+
+  domain_name = var.route53_subdomain_name
+  comment     = "Managed by aws-bootstrap (environments/dev)"
+
+  tags = {
+    Environment = "dev"
+  }
+}
+
 module "bastion" {
   source = "../../modules/bastion"
 
