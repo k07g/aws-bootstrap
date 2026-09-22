@@ -106,3 +106,14 @@ resource "aws_ssoadmin_account_assignment" "aws_admin_prod" {
   target_id   = aws_organizations_account.prod.id
   target_type = "AWS_ACCOUNT"
 }
+
+resource "aws_ssoadmin_account_assignment" "aws_admin_dev" {
+  instance_arn       = tolist(data.aws_ssoadmin_instances.this.arns)[0]
+  permission_set_arn = data.aws_ssoadmin_permission_set.admin.arn
+
+  principal_id   = data.aws_identitystore_user.aws_admin.user_id
+  principal_type = "USER"
+
+  target_id   = aws_organizations_account.dev.id
+  target_type = "AWS_ACCOUNT"
+}
