@@ -13,6 +13,16 @@ output "prod_account_arn" {
   value       = aws_organizations_account.prod.arn
 }
 
+output "dev_account_id" {
+  description = "作成したdevアカウントのID"
+  value       = aws_organizations_account.dev.id
+}
+
+output "dev_account_arn" {
+  description = "作成したdevアカウントのARN"
+  value       = aws_organizations_account.dev.arn
+}
+
 output "sandbox_ou_id" {
   description = "既存Sandbox OUのID"
   value       = aws_organizations_organizational_unit.sandbox.id

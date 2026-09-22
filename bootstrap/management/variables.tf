@@ -26,3 +26,14 @@ variable "prod_account_email" {
   description = "作成するprodアカウントのrootメールアドレス(AWS全体で一意である必要がある)"
   type        = string
 }
+
+variable "dev_account_name" {
+  description = "作成するdevアカウントの表示名"
+  type        = string
+  default     = "Dev"
+}
+
+variable "dev_account_email" {
+  description = "作成するdevアカウントのrootメールアドレス(AWS全体で一意である必要がある)"
+  type        = string
+}
