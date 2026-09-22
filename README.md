@@ -27,8 +27,8 @@ dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`
 
 - `Workloads` OU(Root直下)
 - その配下に新規AWSアカウント(デフォルト名`Prod`・`Dev`)
-- IAM Identity Centerの`aws-admin`ユーザーに対する、`Prod`アカウントへの`AWSAdministratorAccess`
-  割り当て(既存の他アカウントと同じ権限パターンに合わせたもの)
+- IAM Identity Centerの`aws-admin`ユーザーに対する、`Prod`・`Dev`両アカウントへの
+  `AWSAdministratorAccess`割り当て(既存の他アカウントと同じ権限パターンに合わせたもの)
 
 > **必ずAWSルートユーザーで手動実行すること。** `bootstrap/management`はCI/CD(GitHub Actions)
 > からは一切実行しません。アカウント作成(`aws_organizations_account`)は管理アカウントの
