@@ -27,6 +27,8 @@ dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`
 
 - `Workloads` OU(Root直下)
 - その配下に新規AWSアカウント(デフォルト名`Prod`)
+- IAM Identity Centerの`aws-admin`ユーザーに対する、`Prod`アカウントへの`AWSAdministratorAccess`
+  割り当て(既存の他アカウントと同じ権限パターンに合わせたもの)
 
 > **必ずAWSルートユーザーで手動実行すること。** `bootstrap/management`はCI/CD(GitHub Actions)
 > からは一切実行しません。アカウント作成(`aws_organizations_account`)は管理アカウントの
@@ -42,6 +44,15 @@ terraform apply -var="aws_profile=<管理アカウント用プロファイル>" 
 認証には長期のrootアクセスキーではなく、`aws login`(AWS CLI v2.36+)によるコンソール
 セッションベースの一時クレデンシャルを使うことを推奨します(`aws configure`等で長期の
 rootアクセスキーを発行・保存しないでください)。
+
+また、既存の組織構成のうち以下もコード化してimport済みです(実インフラと一致していることを
+`terraform plan`で確認済み)。
+
+- `Sandbox` OU と配下の`KorenagaMakoto`アカウント
+- `Deployments` OU、その配下の`SDLC` OU と`TerraformDeploymentDevAccount`アカウント
+
+Control Tower管理下と見られる`Security` OU(`Audit`/`Log Archive`アカウント)は、Control Tower
+との競合を避けるため意図的にコード化・import対象外としています。
 
 新規作成したアカウントへの`bootstrap/prod`等でのリソース作成は別途対応します(未着手)。
 
