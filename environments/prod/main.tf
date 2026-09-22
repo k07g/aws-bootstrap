@@ -15,7 +15,7 @@ resource "aws_route53_record" "mx" {
   name    = var.route53_domain_name
   type    = "MX"
   ttl     = 300
-  records = ["smtp.google.com."]
+  records = ["1 smtp.google.com."] # MXレコードは "優先度 ホスト名" の2フィールド形式が必須
 }
 
 resource "aws_route53_record" "txt" {
