@@ -36,6 +36,7 @@ jobs:
         directory:
           - bootstrap/dev
           - bootstrap/prod
+          - bootstrap/management
           - environments/dev
           - modules/bastion
           - modules/network

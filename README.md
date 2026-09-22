@@ -5,6 +5,7 @@ AWS環境の初期構築
 
 ```
 bootstrap/
+  management/     # AWS Organizations管理アカウント向けconfig(OU・アカウント作成、ローカルstate)
   dev/            # dev用tfstate保存バケット作成用config(ローカルstate、dev AWSアカウント向け)
   prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け)
 environments/
@@ -13,11 +14,36 @@ modules/
   state-backend/  # tfstate保存用S3バケットモジュール
   network/        # VPC・パブリックサブネットモジュール
   bastion/        # 踏み台サーバ(EC2)モジュール
+  github-oidc/    # GitHub Actions用OIDC provider + IAMロールモジュール
 ```
 
 dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`environments`ともに環境ごとに
 ディレクトリを分けています。認証はAWS CLIのプロファイル(`~/.aws/config`)で環境ごとに切り替える
 想定で、各configの`aws_profile`変数(未指定時はデフォルトの認証情報チェーンを使用)で指定します。
+
+## -1. AWS Organizations管理アカウント: OU・アカウント作成(必要な場合のみ)
+
+`bootstrap/management` は、AWS Organizationsの管理(root)アカウントに対して以下を作成します。
+
+- `Workloads` OU(Root直下)
+- その配下に新規AWSアカウント(デフォルト名`Prod`)
+
+> **必ずAWSルートユーザーで手動実行すること。** `bootstrap/management`はCI/CD(GitHub Actions)
+> からは一切実行しません。アカウント作成(`aws_organizations_account`)は管理アカウントの
+> 強い権限を要する不可逆性の高い操作のため、常に人間がローカル環境から`terraform plan`の内容を
+> 確認したうえで`terraform apply`してください。OIDC等による自動化の対象には含めないでください。
+
+```sh
+cd bootstrap/management
+terraform init
+terraform apply -var="aws_profile=<管理アカウント用プロファイル>" -var="prod_account_email=<一意なrootメール>"
+```
+
+認証には長期のrootアクセスキーではなく、`aws login`(AWS CLI v2.36+)によるコンソール
+セッションベースの一時クレデンシャルを使うことを推奨します(`aws configure`等で長期の
+rootアクセスキーを発行・保存しないでください)。
+
+新規作成したアカウントへの`bootstrap/prod`等でのリソース作成は別途対応します(未着手)。
 
 ## 0. tfstate用S3バケットの作成(初回のみ)
 
