@@ -42,7 +42,6 @@ jobs:
           - modules/network
           - modules/state-backend
           - modules/github-oidc
-          - modules/route53-zone
     steps:
       - uses: actions/checkout@v4
 
@@ -68,7 +67,6 @@ jobs:
           - modules/network
           - modules/state-backend
           - modules/github-oidc
-          - modules/route53-zone
     steps:
       - uses: actions/checkout@v4
 

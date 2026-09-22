@@ -7,8 +7,7 @@ AWS環境の初期構築
 bootstrap/
   management/     # AWS Organizations管理アカウント向けconfig(OU・アカウント作成、ローカルstate)
   dev/            # dev用tfstate保存バケット作成用config(ローカルstate、dev AWSアカウント向け)
-  prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け。
-                  # state bucketに加えてRoute53ホストゾーンも作成)
+  prod/           # prod用tfstate保存バケット作成用config(ローカルstate、prod AWSアカウント向け)
 environments/
   dev/            # dev環境用のroot module(VPC・踏み台サーバを作成)
 modules/
@@ -16,7 +15,6 @@ modules/
   network/        # VPC・パブリックサブネットモジュール
   bastion/        # 踏み台サーバ(EC2)モジュール
   github-oidc/    # GitHub Actions用OIDC provider + IAMロールモジュール
-  route53-zone/   # Route53パブリックホストゾーンモジュール
 ```
 
 dev/prodはAWSアカウント自体を分ける想定のため、`bootstrap`・`environments`ともに環境ごとに
@@ -45,14 +43,7 @@ terraform apply -var="aws_profile=<管理アカウント用プロファイル>" 
 セッションベースの一時クレデンシャルを使うことを推奨します(`aws configure`等で長期の
 rootアクセスキーを発行・保存しないでください)。
 
-apply後に出力される`prod_account_id`を、`bootstrap/prod`の`prod_account_id`変数に渡すことで、
-新規アカウントに対して(専用のSSOアクセス設定を待たずに)`OrganizationAccountAccessRole`
-経由でアクセスできます。
-
-```sh
-cd bootstrap/prod
-terraform apply -var="aws_profile=<管理アカウント用プロファイル>" -var="prod_account_id=<出力されたID>"
-```
+新規作成したアカウントへの`bootstrap/prod`等でのリソース作成は別途対応します(未着手)。
 
 ## 0. tfstate用S3バケットの作成(初回のみ)
 
@@ -76,10 +67,6 @@ prodアカウントの場合も同様に `bootstrap/prod` で実行します。
 (`modules/github-oidc`)も作成します。apply後、出力される`github_actions_role_arn`を
 このリポジトリのGitHub Actions変数 `AWS_DEV_DEPLOY_ROLE_ARN`(Settings → Secrets and
 variables → Actions → Variables)に設定してください。これによりCD(下記)が有効になります。
-
-`bootstrap/prod`は、tfstate用S3バケットに加えて`route53_domain_name`変数(デフォルト
-`ea-sys.jp`)で指定したドメインのRoute53パブリックホストゾーンも作成します。apply後に
-出力される`route53_name_servers`を、ドメインレジストラ側のNSレコードに設定してください。
 
 ## CD(自動デプロイ)
 
