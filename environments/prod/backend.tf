@@ -3,7 +3,7 @@
 # Terraform 1.10+ のS3ネイティブロック機能を使用するため、DynamoDBテーブルは不要です。
 terraform {
   backend "s3" {
-    bucket       = "k07g.terraform.prod"
+    bucket       = "k07g-terraform-prod"
     key          = "prod/route53/terraform.tfstate"
     region       = "ap-northeast-1"
     encrypt      = true
