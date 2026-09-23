@@ -142,8 +142,12 @@ NS委任レコードとして設定する必要があります(下記参照)。
 ## prod環境のRoute53ホストゾーン構築
 
 `environments/prod` は、`ea-sys.jp`(デフォルト)のRoute53パブリックホストゾーンと、
-Google Workspace用のMX/TXT(SPF・サイト確認)/DMARCレコードを作成します。mainへのmerge後、
+Google Workspace用のMX/TXT(SPF・サイト確認)/DMARCレコード、および`environments/dev`が
+管理する`dev.ea-sys.jp`ホストゾーンへのNS委任レコードを作成します。mainへのmerge後、
 CDにより自動で`terraform apply`されます(手動実行も可能)。
+
+`dev.ea-sys.jp`のネームサーバーが変わった場合(devホストゾーンの再作成等)は、
+`dev_subdomain_name_servers`変数を新しい値で更新してください。
 
 ```sh
 cd environments/prod

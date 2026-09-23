@@ -37,3 +37,12 @@ resource "aws_route53_record" "dmarc" {
   ttl     = 600
   records = ["v=DMARC1; p=reject; rua=mailto:dmarc-reports@ea-sys.jp; pct=100; adkim=s; aspf=s"]
 }
+
+# dev.ea-sys.jp(environments/devが管理するホストゾーン)への委任
+resource "aws_route53_record" "dev_subdomain_ns" {
+  zone_id = module.route53_zone.zone_id
+  name    = "dev.${var.route53_domain_name}"
+  type    = "NS"
+  ttl     = 172800
+  records = var.dev_subdomain_name_servers
+}
